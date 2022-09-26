@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Sep 25 15:16:23 2022
+
+@author: Qianzi Hou and Casey McGrath
+"""
+
+# Description:
+# This program uses the method of Gradient Descent to find the Hubble Constant
+
+# Import here
+import math
+
+# The data points that we have
+DATASET = [(0.1, 0.1), (0.3, 0.5), (0.23, 0.3)]
+
+# Use the first two points to get the first guess
+FIRST_GUESS_A = (DATASET[0][1] - DATASET[1][1]) / (DATASET[0][0] -
+                                                   DATASET[1][0])
+FIRST_GUESS_B = DATASET[0][1] - FIRST_GUESS_A * DATASET[0][0]
+
+N = len(DATASET)
+
+# Some parameters of our choice
+STEP = 0.0005
+TOLERENCE = 0.001
+
+
+# Plug in the current guess and get the derivative
+def get_deriv(guess_A, guess_B, term):
+
+    result = 0
+
+    # If the term is A, calculate the derivative with respect to slope
+    if term == "A":
+        for (x, y) in DATASET:
+            pred = guess_A * x + guess_B
+            err = (pred - y) / N
+            result += 2 * x * err
+        return result
+    # Otherwise, calculate the derivative with respect to y-intercept
+    else:
+        for (x, y) in DATASET:
+            result += 2 * (guess_A * x + guess_B - y) / N
+        return result
+
+
+def main():
+
+    # Let the user choose mode
+    mode = input('1 for try it out, and 2 for see it run: ')
+
+    iter = 0
+    if mode == "2":
+        # Set our first guess
+        curr_A = FIRST_GUESS_A
+        curr_B = FIRST_GUESS_B
+
+        while iter < 10000:
+            # Get current derivatives
+            curr_A_deriv = get_deriv(curr_A, curr_B, "A")
+            curr_B_deriv = get_deriv(curr_A, curr_B, "B")
+            # If it's within the tolerence, we are done
+            if abs(curr_A_deriv) < TOLERENCE and abs(curr_B_deriv) < TOLERENCE:
+                print("We find our equation: y = ", curr_A, "x + ", curr_B,
+                      "A deriv = ", curr_A_deriv, "B deriv = ", curr_B_deriv)
+                break
+            # Otherwise, update the slope and y-intercept according to our learning rate
+            else:
+                print("We are on the ", iter, "guess. The guess is A =",
+                      curr_A, "x +", curr_B, "and the deriv is ", curr_A_deriv,
+                      curr_B_deriv)
+                curr_A = curr_A - STEP * curr_A_deriv
+                curr_B = curr_B - STEP * curr_B_deriv
+                iter += 1
+    else:
+        # Set up parameters
+        rate = float(input('Enter your learning rate: '))
+        delta = float(input('Enter your tolerence delta: '))
+        curr_H = float(input('Enter your guess for slope: '))
+        curr_C = float(input('Enter your guess for constant(y-intercept): '))
+        epoch = float(input('Enter the number of epoch: '))
+
+        while iter < epoch:
+            # Get current derivatives
+            curr_H_deriv = get_deriv(curr_H, curr_C, "H")
+            curr_C_deriv = get_deriv(curr_H, curr_C, "C")
+            # If it's within the tolerence, we are done
+            if abs(curr_H_deriv) < delta and abs(curr_C_deriv) < delta:
+                print("We find our Hubble constant: ", curr_H, curr_C,
+                      curr_H_deriv, curr_C_deriv)
+                break
+            elif abs(curr_H_deriv) > 1000000 or abs(curr_C_deriv) > 1000000:
+                print("current guess:", curr_H, "and", curr_C)
+                print("slope deriv is:", curr_H_deriv, "and constant deriv is:", curr_C_deriv)
+                print("We've gone too far......")
+                break
+            # Otherwise, update the slope and y-intercept according to our learning rate
+            else:
+                print("We are on the ", iter, "guess. The guess is y =",
+                      curr_H, "+", curr_C, "and the deriv is ", curr_H_deriv,
+                      curr_C_deriv)
+                curr_H = curr_H - rate * curr_H_deriv
+                curr_C = curr_C - rate * curr_C_deriv
+                iter += 1
+
+
+if __name__ == "__main__":
+    main()
